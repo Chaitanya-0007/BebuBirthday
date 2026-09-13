@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>21 — For my Bebu</title>
+<meta name="description" content="A little birthday world made for someone very special." />
+<meta name="theme-color" content="#0e0c0a" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="21" />
+<meta property="og:description" content="A little birthday world made for someone very special." />
+<meta property="og:type" content="website" />
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+<!-- Google Fonts (site still works fully if this fails to load — see style.css fallbacks) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- Floating music toggle, appears once inside the diary -->
+<button id="music-toggle" class="music-toggle" data-music-toggle hidden aria-pressed="false" aria-label="Turn background music on">&#9834; OFF</button>
+
+<div id="app">
+
+  <!-- ============ LANDING / GRAND WELCOME ============ -->
+  <section id="screen-landing" class="screen is-active" aria-label="Welcome">
+    <div class="landing">
+      <p class="landing__kicker" id="landing-kicker">FOR BEBU</p>
+      <h1 class="landing__title" id="landing-title">21</h1>
+      <p class="landing__subtitle" id="landing-subtitle">Something I made for you.</p>
+      <button id="begin-btn" class="btn btn--primary">BEGIN <span aria-hidden="true">&#10084;</span></button>
+    </div>
+    <div class="landing__glow" aria-hidden="true"></div>
+  </section>
+
+  <!-- ============ MORNING INTERLUDE (not a chapter — a one-time transition) ============ -->
+  <section id="screen-morning" class="screen" hidden aria-label="Good morning">
+    <div class="morning">
+      <p class="morning__line">Good morning,<br />birthday girl. <span aria-hidden="true">☀️❤️</span></p>
+      <p class="morning__line">Hope you slept well.</p>
+      <p class="morning__line">Yesterday was only the beginning.</p>
+      <p class="morning__line">You have a whole birthday waiting for you&hellip; and a few more things from me.</p>
+      <button id="morning-continue-btn" class="btn btn--primary">LET'S CONTINUE <span aria-hidden="true">&#10084;</span></button>
+    </div>
+    <div class="landing__glow" aria-hidden="true"></div>
+  </section>
+
+  <!-- ============ RANJHA MORNING MUSIC MOMENT (not a chapter) ============ -->
+  <section id="screen-ranjha" class="screen" hidden aria-label="A song for the morning">
+    <div class="morning" id="ranjha-content"></div>
+    <div class="landing__glow" aria-hidden="true"></div>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section id="screen-dashboard" class="screen" hidden aria-label="Birthday diary">
+    <header class="dash__header">
+      <p class="dash__eyebrow">Happy 21st, <span id="dash-name">Bebu</span> <span aria-hidden="true">&#10084;</span></p>
+      <h2 class="dash__heading">21 little things.<br />Made for one person.</h2>
+      <p class="dash__intro">I didn't know how to put everything I wanted to say into one message, so I decided to spread it across your whole birthday.</p>
+    </header>
+
+    <div class="dash__diary">
+      <div class="dash__diary-row">
+        <h3 class="dash__diary-title">Your birthday diary</h3>
+        <p class="dash__progress" id="progress-label">0 / 21</p>
+      </div>
+      <div class="progress-bar" aria-hidden="true"><div class="progress-bar__fill" id="progress-fill"></div></div>
+      <div id="chapter-grid" class="chapter-grid" role="list"></div>
+    </div>
+  </section>
+
+  <!-- ============ CHAPTER DETAIL (overlay) ============ -->
+  <div id="chapter-overlay" class="chapter-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="chapter-title">
+    <div class="chapter-overlay__inner">
+      <button id="chapter-close" class="chapter-overlay__close" aria-label="Back to diary">&#8592; Back</button>
+      <div id="chapter-content" class="chapter-content"></div>
+    </div>
+  </div>
+
+  <!-- ============ DEV PANEL (only shown when CONFIG.devMode === true) ============ -->
+  <div id="dev-panel" class="dev-panel" hidden>
+    <p class="dev-panel__title">DEVELOPER MODE</p>
+    <p class="dev-panel__subtitle">Testing controls — hidden in production</p>
+    <p class="dev-panel__row" id="dev-browser-time"></p>
+    <p class="dev-panel__row" id="dev-ist-time"></p>
+
+    <button data-dev="unlock-all">UNLOCK ALL</button>
+    <button data-dev="restore-time">RESTORE REAL TIME</button>
+
+    <label class="dev-panel__label" for="dev-chapter-select">Test Chapter</label>
+    <select id="dev-chapter-select" class="dev-panel__select"></select>
+    <button data-dev="open-chapter">OPEN CHAPTER</button>
+
+    <button data-dev="test-surprise">TEST CHAPTER 2</button>
+    <button data-dev="test-morning">TEST MORNING</button>
+    <button data-dev="test-ranjha">TEST RANJHA</button>
+    <button data-dev="test-delivery" id="dev-test-delivery-btn">TEST MANUAL DELIVERY: OFF</button>
+
+    <button data-dev="reset-everything">RESET EVERYTHING</button>
+
+    <button data-dev="close">Close panel</button>
+  </div>
+
+</div>
+
+<canvas id="fx-canvas" aria-hidden="true"></canvas>
+
+<script src="js/config.js"></script>
+<script src="js/unlocks.js"></script>
+<script src="js/countdown.js"></script>
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
