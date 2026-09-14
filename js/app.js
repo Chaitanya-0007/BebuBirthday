@@ -1078,6 +1078,21 @@
       const overlay = document.getElementById("chapter-overlay");
       if (overlay) overlay.scrollTop = 0;
 
+      // Reveals a next-action button that started out `hidden`. Its CSS
+      // fade-in animation was authored for its ORIGINAL animation-delay
+      // (computed from the beat's other content); simply clearing `hidden`
+      // would replay that same delay from scratch, leaving the button
+      // invisible-but-present for a second or two after the real reveal —
+      // which reads as "the button doesn't show up until I click a bunch
+      // of times". Dropping the animation makes it appear the instant the
+      // photo/jacket reveal actually happens.
+      function revealActionButton(btn) {
+        if (!btn) return;
+        btn.hidden = false;
+        btn.style.animation = "none";
+        btn.style.opacity = "1";
+      }
+
       const photoTap = $("[data-story-photo-tap]", stage);
       if (photoTap) {
         const actionBtn = $("[data-story-next]", stage);
@@ -1089,7 +1104,7 @@
             photoTap.classList.add("is-revealed");
             $("[data-story-photo-label]", photoTap).textContent = "";
             if (afterBox) afterBox.hidden = false;
-            if (actionBtn) actionBtn.hidden = false;
+            revealActionButton(actionBtn);
           },
           { once: true }
         );
@@ -1110,7 +1125,7 @@
               });
               revealBox.hidden = false;
               revealBox.innerHTML = storyLinesMarkup(s.revealLines, 0.05, 0.35);
-              if (actionBtn) actionBtn.hidden = false;
+              revealActionButton(actionBtn);
             },
             { once: true }
           );
