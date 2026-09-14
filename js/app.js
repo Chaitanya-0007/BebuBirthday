@@ -789,17 +789,11 @@
 
     function renderStage() {
       const isLast = stepIndex >= c.steps.length - 1;
-      let html = "";
-      let delay = 0.15;
-      if (stepIndex === -1) {
-        html += stepBlockMarkup(c.teaser, null, null, delay);
-        delay += 0.5;
-      } else {
-        for (let i = 0; i <= stepIndex; i++) {
-          html += stepBlockMarkup(c.steps[i].reveal, c.steps[i].image, c.steps[i].imageAlt, delay);
-          delay += 0.5;
-        }
-      }
+      const delay = 0.15;
+      const html =
+        stepIndex === -1
+          ? stepBlockMarkup(c.teaser, null, null, delay)
+          : stepBlockMarkup(c.steps[stepIndex].reveal, c.steps[stepIndex].image, c.steps[stepIndex].imageAlt, delay);
       const buttonLabel = isLast ? c.payoffLabel : c.steps[stepIndex + 1].label;
       scene.innerHTML = `
         <div class="final-block">

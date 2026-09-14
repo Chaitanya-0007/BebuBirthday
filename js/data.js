@@ -627,7 +627,7 @@ const CHAPTERS = [
       steps: [
         { label: "ONE", reveal: "You're unbearably cute when you talk in your sleep — or half-asleep." },
         { label: "ANOTHER", reveal: "You randomly start dancing the second you're happy or excited." },
-        { label: "WAIT…", reveal: "You have basically claimed every jacket and hoodie I own at this point." },
+        { label: "WAIT…", reveal: "You care about every tiny thing I give you, like it's something bigger." },
       ],
       payoffLabel: "This is you",
       payoff: {
