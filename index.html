@@ -93,6 +93,20 @@
     <button data-dev="unlock-all">UNLOCK ALL</button>
     <button data-dev="restore-time">RESTORE REAL TIME</button>
 
+    <label class="dev-panel__label" for="dev-time-select">Simulate Time</label>
+    <select id="dev-time-select" class="dev-panel__select">
+      <option value="0,0,30">12:30 AM</option>
+      <option value="0,1,30">1:30 AM</option>
+      <option value="0,8,30">8:30 AM</option>
+      <option value="0,9,0">9:00 AM</option>
+      <option value="0,11,0">11:00 AM</option>
+      <option value="0,12,0">12:00 PM</option>
+      <option value="0,15,0">3:00 PM (afternoon)</option>
+      <option value="0,22,0">10:00 PM</option>
+      <option value="0,23,30">11:30 PM (late night)</option>
+    </select>
+    <button data-dev="simulate-time">GO TO TIME</button>
+
     <label class="dev-panel__label" for="dev-chapter-select">Test Chapter</label>
     <select id="dev-chapter-select" class="dev-panel__select"></select>
     <button data-dev="open-chapter">OPEN CHAPTER</button>

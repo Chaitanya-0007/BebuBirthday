@@ -577,6 +577,16 @@ a {
   animation: fadeUp 0.6s var(--ease) both;
 }
 
+.reveal-step {
+  opacity: 0;
+  animation: fadeUp 0.7s var(--ease) both;
+}
+
+.reveal-step__image {
+  width: min(240px, 70vw);
+  margin: 16px auto 0;
+}
+
 .reveal-payoff .photo-frame {
   margin-bottom: 20px;
 }
@@ -1074,12 +1084,45 @@ a {
 }
 
 .vision-tile {
-  padding: 18px 20px;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 16px 20px;
   border-radius: var(--radius-md);
   border: 1px solid var(--hairline);
   background: linear-gradient(160deg, var(--bg-card), var(--bg-elevated));
-  font-size: 0.95rem;
-  color: var(--text-muted);
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  animation: fadeUp 0.6s var(--ease) both;
+  transition: border-color 0.3s var(--ease);
+}
+
+.vision-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--gold), transparent);
+}
+
+.vision-tile:hover {
+  border-color: rgba(216, 180, 121, 0.35);
+}
+
+.vision-tile__num {
+  flex-shrink: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--gold-strong);
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+.vision-tile__text {
+  font-family: var(--font-serif);
+  font-size: 1.02rem;
+  color: var(--text);
   line-height: 1.5;
 }
 
@@ -1158,6 +1201,439 @@ a {
   margin-top: 20px;
   opacity: 0;
   animation: fadeUp 0.7s var(--ease) both;
+}
+
+/* ---------------------------------------------------------------------
+   Story Journey (Chapter 3 only) — one stable stage, one beat at a time
+   --------------------------------------------------------------------- */
+.story-stage {
+  min-height: 30vh;
+}
+
+.story-beat {
+  animation: fadeUp 0.5s var(--ease) both;
+}
+
+.memory-timestamp {
+  position: relative;
+  margin: 8px 0;
+  padding: 22px 28px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(216, 180, 121, 0.3);
+  background: linear-gradient(160deg, var(--bg-card), var(--bg-elevated));
+  opacity: 0;
+  animation: fadeUp 0.8s var(--ease) both;
+}
+
+.memory-timestamp::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(216, 180, 121, 0.25);
+  animation: timestampPulse 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes timestampPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(216, 180, 121, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 22px 4px rgba(216, 180, 121, 0.12);
+  }
+}
+
+.memory-timestamp__label {
+  color: var(--text-faint);
+  letter-spacing: 0.2em;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.memory-timestamp__date {
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 7vw, 2.1rem);
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.memory-timestamp__time {
+  margin-top: 6px;
+  color: var(--gold-strong);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 5.5vw, 1.5rem);
+}
+
+.memory-fragments {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.memory-fragment {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  animation: fadeUp 0.6s var(--ease) both;
+}
+
+.story-photo {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 6px auto 0;
+  padding: 0;
+  border: none;
+  background: none;
+  opacity: 0;
+  animation: fadeUp 0.7s var(--ease) both;
+}
+
+.story-photo__frame {
+  position: relative;
+  filter: blur(14px);
+  transform: scale(1.02);
+  transition: filter 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+.story-photo.is-revealed .story-photo__frame {
+  filter: blur(0);
+  transform: scale(1);
+}
+
+.story-photo__label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  transition: opacity 0.3s;
+}
+
+.hug-sequence {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+}
+
+.hug-beat {
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  color: var(--text);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  opacity: 0;
+  animation: fadeUp 0.5s var(--ease) both;
+}
+
+.hug-beat--twist {
+  border-color: rgba(217, 169, 154, 0.5);
+  color: var(--blush);
+}
+
+.hug-quote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 5.5vw, 1.5rem);
+  color: var(--gold-strong);
+  opacity: 0;
+  animation: fadeUp 0.6s var(--ease) both;
+}
+
+.thought-fragments {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.thought-fragment {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.98rem;
+  color: var(--text-muted);
+  opacity: 0;
+  animation: fadeUp 0.6s var(--ease) both;
+}
+
+.memory-trail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.memory-trail__item {
+  color: var(--gold-strong);
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  opacity: 0;
+  animation: fadeUp 0.5s var(--ease) both;
+}
+
+.memory-trail__item:not(:last-child)::after {
+  content: "↓";
+  display: block;
+  margin-top: 8px;
+  color: var(--text-faint);
+}
+
+.story-timestamp-inline {
+  font-size: clamp(1.1rem, 5vw, 1.4rem) !important;
+}
+
+.final-line--emphasis {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.25rem, 6vw, 1.6rem);
+  color: var(--gold-strong);
+}
+
+/* Fest card — Chapter 4, state 0 */
+.fest-card {
+  position: relative;
+  margin: 10px auto 0;
+  padding: 26px 24px;
+  max-width: 280px;
+  border-radius: var(--radius-md);
+  border: 1.5px dashed rgba(216, 180, 121, 0.35);
+  background: linear-gradient(160deg, var(--bg-card), var(--bg-elevated));
+  text-align: center;
+  opacity: 0;
+  transform: rotate(-1.5deg);
+  animation: fadeUp 0.7s var(--ease) both;
+}
+
+.fest-card__title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  font-size: clamp(1.1rem, 5.5vw, 1.35rem);
+  color: var(--text);
+}
+
+.fest-card__loading {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.fest-card__dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.fest-card__dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.fest-card__dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.fest-card__dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotPulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Jacket picker — Chapter 4, state 2 */
+.jacket-picker {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 14px 0 4px;
+  flex-wrap: wrap;
+}
+
+.jacket-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--hairline);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeUp 0.6s var(--ease) both;
+  transition: border-color 0.3s var(--ease), opacity 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.jacket-card:disabled {
+  cursor: default;
+}
+
+.jacket-card__silhouette {
+  display: block;
+  width: 44px;
+  height: 48px;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(160deg, var(--bg-elevated), var(--bg-card));
+  border: 1px solid var(--hairline);
+  position: relative;
+}
+
+.jacket-card__silhouette::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 10px;
+  border-left: 1px solid var(--hairline);
+  border-right: 1px solid var(--hairline);
+  border-radius: 0 0 6px 6px;
+}
+
+.jacket-card--picked {
+  border-color: var(--gold);
+  color: var(--gold-strong);
+  transform: scale(1.04);
+}
+
+.jacket-card--dim {
+  opacity: 0.35;
+}
+
+.jacket-reveal {
+  margin-top: 16px;
+}
+
+/* Punch reveal — Chapter 5, state 1 */
+.punch-line {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(1.8rem, 9vw, 2.4rem);
+  color: var(--text);
+  text-align: center;
+  opacity: 0;
+  animation: fadeUp 0.6s var(--ease) both;
+}
+
+.punch-followup {
+  margin-top: 4px;
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-align: center;
+  opacity: 0;
+  animation: fadeUp 0.6s var(--ease) both;
+}
+
+.story-photo-after {
+  margin-top: 14px;
+}
+
+.story-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  color: var(--text-faint);
+  letter-spacing: 0.14em;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeUp 0.5s var(--ease) both;
+}
+
+/* Status check — Chapter 6, state 2 */
+.status-check {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.status-check__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  opacity: 0;
+  animation: fadeUp 0.5s var(--ease) both;
+}
+
+.status-check__mark {
+  font-weight: 600;
+}
+
+.status-check__item.is-ok .status-check__mark {
+  color: var(--gold-strong);
+}
+
+.status-check__item.is-missing {
+  border-color: rgba(217, 169, 154, 0.4);
+  color: var(--blush);
+}
+
+.status-check__item.is-missing .status-check__mark {
+  color: var(--blush);
+}
+
+.punch-line--alert {
+  margin-top: 10px;
+  color: var(--blush);
+  font-size: clamp(1.6rem, 8vw, 2.1rem);
+}
+
+.next-chapter-hint {
+  margin-top: 14px;
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
+  font-size: 0.78rem;
+  opacity: 0;
+  animation: fadeUp 0.6s var(--ease) both;
 }
 
 .chapter-goodnight {

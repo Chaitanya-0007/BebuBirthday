@@ -22,10 +22,11 @@ const CONFIG = {
   // midnight, still the night of her birthday.
   chapter2RevealTime: "2026-09-14T01:00:00+05:30",
 
-  // The morning interlude — chapters 3+ never open before this, no matter
-  // what their own unlockAt says. Between chapter2RevealTime and this,
-  // only Chapter 2 may be available (see countdown.js isNightLockActive).
-  morningInterludeTime: "2026-09-14T08:00:00+05:30",
+  // The morning interlude + Ranjha become available any time after this —
+  // not exactly at this minute. Between chapter2RevealTime and this, only
+  // Chapter 2 may be available (see countdown.js isNightLockActive).
+  // Chapter 3 itself unlocks later, at noon — see its unlockAt in data.js.
+  morningInterludeTime: "2026-09-14T09:00:00+05:30",
 
   // Birthday ambient music. Starts on the BEGIN click (a real user gesture,
   // so autoplay restrictions don't block it). Ducks/pauses automatically
@@ -38,5 +39,5 @@ const CONFIG = {
 
   // Developer/testing mode — see README "Developer / testing mode".
   // MUST be false before you send the site to her.
-  devMode: false,
+  devMode: true,
 };

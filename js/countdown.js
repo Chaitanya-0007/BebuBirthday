@@ -33,9 +33,23 @@ function unlockTime(daysAfterBirthday, hours, minutes = 0) {
   return `${dateStr}T${pad(hours)}:${pad(minutes)}:00${CONFIG.utcOffset}`;
 }
 
+/**
+ * The single source of truth for "what time is it right now" everywhere
+ * in the app. In production this is always the real clock. In dev mode
+ * only, `window.__DEV_FAKE_NOW__` (a timestamp in ms) can override it so
+ * you can simulate any point in the day without touching your system
+ * clock — see the dev panel's "Simulate Time" control in app.js.
+ */
+function getNow() {
+  if (CONFIG.devMode && window.__DEV_FAKE_NOW__ != null) {
+    return window.__DEV_FAKE_NOW__;
+  }
+  return Date.now();
+}
+
 /** Returns milliseconds remaining until the ISO timestamp (negative if past). */
 function msUntil(isoString) {
-  return new Date(isoString).getTime() - Date.now();
+  return new Date(isoString).getTime() - getNow();
 }
 
 /** "Opens at 1:00 AM" — a calm, fixed clock time rather than a ticking
@@ -52,7 +66,7 @@ function formatOpensAt(isoString) {
 
 /** True once her birthday day (in IST) has fully ended. */
 function isAfterBirthdayDay() {
-  return Date.now() >= new Date(unlockTime(1, 0, 0)).getTime();
+  return getNow() >= new Date(unlockTime(1, 0, 0)).getTime();
 }
 
 function getOpenedChapters() {
@@ -82,7 +96,7 @@ function markChapterOpened(id) {
  * first place.
  */
 function isNightLockActive() {
-  const now = Date.now();
+  const now = getNow();
   return (
     now >= new Date(CONFIG.chapter2RevealTime).getTime() &&
     now < new Date(CONFIG.morningInterludeTime).getTime()

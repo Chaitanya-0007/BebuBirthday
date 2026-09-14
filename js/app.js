@@ -46,7 +46,7 @@
       /* ignore */
     }
     if (seen) return false;
-    return Date.now() >= new Date(CONFIG.morningInterludeTime).getTime();
+    return getNow() >= new Date(CONFIG.morningInterludeTime).getTime();
   }
 
   function goPastLanding() {
@@ -303,6 +303,8 @@
         return renderReveal(chapter);
       case "bridge":
         return renderBridge(chapter);
+      case "storyJourney":
+        return renderStoryJourney(chapter);
       case "final":
         return renderFinal(chapter);
       default:
@@ -333,6 +335,9 @@
         break;
       case "bridge":
         wireBridge(chapter, root);
+        break;
+      case "storyJourney":
+        wireStoryJourney(chapter, root);
         break;
       case "final":
         wireFinal(chapter, root);
@@ -400,6 +405,7 @@
       });
     });
     $$(".photo-frame__img", root).forEach((img) => {
+      if (img.closest(".story-photo")) return;
       img.addEventListener("click", () => img.classList.toggle("is-zoomed"));
     });
   }
@@ -467,7 +473,15 @@
         <h2 class="chapter-heading">${c.heading}</h2>
         ${c.intro ? `<p class="msg__paragraph">${c.intro}</p>` : ""}
         <div class="tiles-grid">
-          ${c.tiles.map((t) => `<div class="vision-tile">${t}</div>`).join("")}
+          ${c.tiles
+            .map(
+              (t, i) => `
+                <div class="vision-tile" style="animation-delay:${0.1 + i * 0.08}s">
+                  <span class="vision-tile__num">${String(i + 1).padStart(2, "0")}</span>
+                  <span class="vision-tile__text">${t}</span>
+                </div>`
+            )
+            .join("")}
         </div>
       </article>`;
   }
@@ -760,15 +774,39 @@
     const c = chapter.content;
     let stepIndex = -1;
 
+    function stepBlockMarkup(text, image, alt, delay) {
+      const img = image
+        ? `<div class="photo-frame reveal-step__image">
+             <img src="${image}" alt="${alt || ""}" class="photo-frame__img" loading="lazy" />
+             <div class="photo-frame__fallback" aria-hidden="true">&#128444;</div>
+           </div>`
+        : "";
+      return `<div class="reveal-step" style="animation-delay:${delay}s">
+        <p class="final-line">${text}</p>
+        ${img}
+      </div>`;
+    }
+
     function renderStage() {
       const isLast = stepIndex >= c.steps.length - 1;
-      const lines = stepIndex === -1 ? [c.teaser] : c.steps.slice(0, stepIndex + 1).map((s) => s.reveal);
+      let html = "";
+      let delay = 0.15;
+      if (stepIndex === -1) {
+        html += stepBlockMarkup(c.teaser, null, null, delay);
+        delay += 0.5;
+      } else {
+        for (let i = 0; i <= stepIndex; i++) {
+          html += stepBlockMarkup(c.steps[i].reveal, c.steps[i].image, c.steps[i].imageAlt, delay);
+          delay += 0.5;
+        }
+      }
       const buttonLabel = isLast ? c.payoffLabel : c.steps[stepIndex + 1].label;
       scene.innerHTML = `
         <div class="final-block">
-          ${linesMarkup(lines)}
-          <button class="btn btn--ghost final-continue" data-reveal-btn style="animation-delay:${lines.length * 0.5 + 0.3}s">${buttonLabel}</button>
+          ${html}
+          <button class="btn btn--ghost final-continue" data-reveal-btn style="animation-delay:${delay + 0.15}s">${buttonLabel}</button>
         </div>`;
+      wireImageFallback(scene);
       $("[data-reveal-btn]", scene).addEventListener("click", () => {
         if (isLast) {
           showPayoff();
@@ -799,6 +837,290 @@
     }
 
     renderStage();
+  }
+
+  /* ---------------------------------------------------------------------
+     Story Journey — shared by Chapters 3 through 7. A small deterministic
+     state machine: exactly one story beat lives in the DOM at a time.
+     Every transition fully replaces `stage.innerHTML`, so old nodes (and
+     any listeners on them) are discarded by the browser — there is no
+     path to duplicated story text or stacked listeners, even on rapid or
+     repeated clicks (each action button is also bound with {once:true}
+     as a second layer of protection against a single element firing
+     twice).
+     --------------------------------------------------------------------- */
+  function renderStoryJourney(chapter) {
+    const c = chapter.content;
+    return `
+      <article class="chapter-type chapter-type--story-journey">
+        <p class="chapter-eyebrow">${c.eyebrow || eyebrowNum(chapter.id)}</p>
+        <h2 class="chapter-heading">${c.heading}</h2>
+        <div class="story-stage" data-story-stage></div>
+      </article>`;
+  }
+
+  function timestampCardMarkup(ts, delay) {
+    return `
+      <div class="memory-timestamp" style="animation-delay:${delay}s">
+        ${ts.label ? `<p class="memory-timestamp__label">${ts.label}</p>` : ""}
+        <p class="memory-timestamp__date">${ts.date}</p>
+        ${ts.time ? `<p class="memory-timestamp__time">${ts.time}</p>` : ""}
+      </div>`;
+  }
+
+  function storyLinesMarkup(lines, startDelay = 0.15, step = 0.45) {
+    return lines
+      .map((line, i) => {
+        const delay = startDelay + i * step;
+        if (line && typeof line === "object") {
+          return `<p class="final-line${line.emphasis ? " final-line--emphasis" : ""}" style="animation-delay:${delay}s">${line.text}</p>`;
+        }
+        return `<p class="final-line" style="animation-delay:${delay}s">${line}</p>`;
+      })
+      .join("");
+  }
+
+  function storyActionButton(label, delay, isFinal) {
+    return `<button class="btn ${isFinal ? "btn--primary" : "btn--ghost"} final-continue" data-story-next style="animation-delay:${delay}s">${label}</button>`;
+  }
+
+  function nextChapterHintMarkup(chapter, delay) {
+    const nextChapter = CHAPTERS.find((c) => c.id === chapter.id + 1);
+    if (!nextChapter || nextChapter.manualUnlock) return "";
+    if (getChapterStatus(nextChapter) !== "LOCKED") return "";
+    return `<p class="next-chapter-hint" style="animation-delay:${delay}s">Chapter ${String(nextChapter.id).padStart(2, "0")} — ${formatOpensAt(nextChapter.unlockAt)}</p>`;
+  }
+
+  function wireStoryJourney(chapter, root) {
+    const stage = $("[data-story-stage]", root);
+    const eyebrowEl = $(".chapter-eyebrow", root);
+    const headingEl = $(".chapter-heading", root);
+    const states = chapter.content.states;
+    let index = 0;
+
+    function goNext() {
+      if (states[index].isFinal) {
+        closeChapter();
+        return;
+      }
+      index++;
+      render();
+    }
+
+    function bindNext(delayAfter) {
+      const btn = $("[data-story-next]", stage);
+      if (btn) btn.addEventListener("click", goNext, { once: true });
+      return delayAfter;
+    }
+
+    function render() {
+      const s = states[index];
+      let html = "";
+      let delay = 0.15;
+
+      if (s.badge) {
+        html += `<p class="story-badge" style="animation-delay:${delay}s">${s.badge}<span class="fest-card__dots"><span></span><span></span><span></span></span></p>`;
+        delay += 0.5;
+      }
+
+      if (s.visualType === "opening") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.3;
+        html += timestampCardMarkup(s.timestamp, delay);
+        delay += 0.6;
+        html += storyActionButton(s.action, delay);
+      } else if (s.visualType === "fragments") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.2;
+        html += `<div class="memory-fragments">${s.fragments
+          .map((f, i) => `<span class="memory-fragment" style="animation-delay:${delay + i * 0.15}s">${f}</span>`)
+          .join("")}</div>`;
+        delay += s.fragments.length * 0.15 + 0.4;
+        if (s.afterLines) {
+          html += storyLinesMarkup(s.afterLines, delay);
+          delay += s.afterLines.length * 0.45 + 0.3;
+        }
+        html += storyActionButton(s.action, delay, s.isFinal);
+      } else if (s.visualType === "statusCheck") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.25;
+        html += `<div class="status-check">${s.items
+          .map(
+            (it, i) =>
+              `<p class="status-check__item ${it.ok ? "is-ok" : "is-missing"}" style="animation-delay:${delay + i * 0.25}s">${it.label} <span class="status-check__mark">${it.ok ? "&#10003;" : "&#10007;"}</span></p>`
+          )
+          .join("")}</div>`;
+        delay += s.items.length * 0.25 + 0.4;
+        html += `<p class="punch-line punch-line--alert" style="animation-delay:${delay}s">${s.punchLine}</p>`;
+        delay += 0.6;
+        html += storyActionButton(s.action, delay, s.isFinal);
+      } else if (s.visualType === "photo") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.3;
+        html += `
+          <button type="button" class="story-photo" data-story-photo-tap style="animation-delay:${delay}s">
+            <span class="story-photo__label" data-story-photo-label>${s.imageLabel}</span>
+            <div class="photo-frame story-photo__frame">
+              <img src="${s.image}" alt="${s.imageAlt || ""}" class="photo-frame__img" loading="lazy" />
+              <div class="photo-frame__fallback" aria-hidden="true">&#128444;</div>
+            </div>
+          </button>`;
+        if (s.afterLines) {
+          html += `<div class="story-photo-after" data-story-photo-after hidden>${storyLinesMarkup(s.afterLines, 0.1, 0.35)}</div>`;
+        }
+        html += storyActionButton(s.action, delay + 0.3, s.isFinal);
+      } else if (s.visualType === "festCard") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.3;
+        html += `
+          <div class="fest-card" style="animation-delay:${delay}s">
+            <p class="fest-card__title">${s.cardTitle}</p>
+            <p class="fest-card__loading">${s.cardLoading}<span class="fest-card__dots"><span></span><span></span><span></span></span></p>
+          </div>`;
+        delay += 0.9;
+        html += storyActionButton(s.action, delay, s.isFinal);
+      } else if (s.visualType === "jacketPicker") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.3;
+        html += `<div class="jacket-picker" data-jacket-picker>${s.jackets
+          .map(
+            (label, i) => `
+              <button type="button" class="jacket-card" data-jacket-card style="animation-delay:${delay + i * 0.15}s">
+                <span class="jacket-card__silhouette" aria-hidden="true"></span>
+                <span class="jacket-card__label">${label}</span>
+              </button>`
+          )
+          .join("")}</div>`;
+        delay += s.jackets.length * 0.15 + 0.35;
+        html += `<div class="jacket-reveal" data-jacket-reveal hidden></div>`;
+        html += storyActionButton(s.action, delay, s.isFinal);
+      } else if (s.visualType === "punchReveal") {
+        html += `<p class="punch-line" style="animation-delay:${delay}s">${s.punchLine}</p>`;
+        delay += 0.6;
+        if (s.punchFollowup) {
+          html += `<p class="punch-followup" style="animation-delay:${delay}s">${s.punchFollowup}</p>`;
+          delay += 0.5;
+        }
+        delay += 0.2;
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.3;
+        html += storyActionButton(s.action, delay, s.isFinal);
+      } else if (s.visualType === "timestampStory") {
+        html += storyLinesMarkup(s.intro, delay);
+        delay += s.intro.length * 0.45 + 0.25;
+        html += timestampCardMarkup(s.timestamp, delay);
+        delay += 0.7;
+        html += storyLinesMarkup(s.lines, delay, 0.35);
+        delay += s.lines.length * 0.35 + 0.3;
+        html += storyActionButton(s.action, delay);
+      } else if (s.visualType === "lines") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.3;
+        html += storyActionButton(s.action, delay, s.isFinal);
+      } else if (s.visualType === "hug") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.25;
+        html += `<div class="hug-sequence">`;
+        html += `<p class="hug-beat" style="animation-delay:${delay}s">${s.beats[0]}</p>`;
+        delay += 0.55;
+        html += `<p class="hug-beat hug-beat--twist" style="animation-delay:${delay}s">${s.beats[1]}</p>`;
+        delay += 0.6;
+        html += `<p class="final-line" style="animation-delay:${delay}s">${s.quoteIntro}</p>`;
+        delay += 0.5;
+        html += `<p class="hug-quote" style="animation-delay:${delay}s">“${s.quote}”</p>`;
+        delay += 0.6;
+        html += `<p class="hug-beat" style="animation-delay:${delay}s">${s.closingBeat}</p>`;
+        delay += 0.55;
+        html += `</div>`;
+        html += storyLinesMarkup(s.closingLines, delay);
+        delay += s.closingLines.length * 0.45 + 0.3;
+        html += storyActionButton(s.action, delay);
+      } else if (s.visualType === "thoughts") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.2;
+        html += `<div class="thought-fragments">${s.thoughts
+          .map((t, i) => `<p class="thought-fragment" style="animation-delay:${delay + i * 0.4}s">${t}</p>`)
+          .join("")}</div>`;
+        delay += s.thoughts.length * 0.4 + 0.3;
+        html += storyLinesMarkup(s.closingLines, delay);
+        delay += s.closingLines.length * 0.45 + 0.3;
+        html += storyActionButton(s.action, delay);
+      } else if (s.visualType === "trail") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.25;
+        html += `<div class="memory-trail">${s.trail
+          .map((t, i) => `<p class="memory-trail__item" style="animation-delay:${delay + i * 0.35}s">${t}</p>`)
+          .join("")}</div>`;
+        delay += s.trail.length * 0.35 + 0.3;
+        html += storyLinesMarkup(s.closingLines, delay, 0.4);
+        delay += s.closingLines.length * 0.4 + 0.3;
+        html += storyActionButton(s.action, delay, s.isFinal);
+      } else if (s.visualType === "final") {
+        html += storyLinesMarkup(s.lines, delay);
+        delay += s.lines.length * 0.45 + 0.25;
+        html += `<p class="final-line final-line--closing story-timestamp-inline" style="animation-delay:${delay}s">${s.timestampLine}</p>`;
+        delay += 0.6;
+        html += storyLinesMarkup(s.closingLines, delay, 0.4);
+        delay += s.closingLines.length * 0.4 + 0.3;
+        html += storyActionButton(s.action, delay, true);
+      }
+
+      if (s.isFinal) {
+        html += nextChapterHintMarkup(chapter, delay + 0.3);
+      }
+
+      stage.innerHTML = `<div class="final-block story-beat">${html}</div>`;
+      wireImageFallback(stage);
+
+      if (eyebrowEl) eyebrowEl.hidden = index > 0;
+      if (headingEl) headingEl.hidden = index > 0;
+
+      const overlay = document.getElementById("chapter-overlay");
+      if (overlay) overlay.scrollTop = 0;
+
+      const photoTap = $("[data-story-photo-tap]", stage);
+      if (photoTap) {
+        const actionBtn = $("[data-story-next]", stage);
+        const afterBox = $("[data-story-photo-after]", stage);
+        if (actionBtn) actionBtn.hidden = true;
+        photoTap.addEventListener(
+          "click",
+          () => {
+            photoTap.classList.add("is-revealed");
+            $("[data-story-photo-label]", photoTap).textContent = "";
+            if (afterBox) afterBox.hidden = false;
+            if (actionBtn) actionBtn.hidden = false;
+          },
+          { once: true }
+        );
+      }
+
+      const jacketPicker = $("[data-jacket-picker]", stage);
+      if (jacketPicker) {
+        const actionBtn = $("[data-story-next]", stage);
+        const revealBox = $("[data-jacket-reveal]", stage);
+        if (actionBtn) actionBtn.hidden = true;
+        $$("[data-jacket-card]", jacketPicker).forEach((card) => {
+          card.addEventListener(
+            "click",
+            () => {
+              $$("[data-jacket-card]", jacketPicker).forEach((c) => {
+                c.disabled = true;
+                c.classList.add(c === card ? "jacket-card--picked" : "jacket-card--dim");
+              });
+              revealBox.hidden = false;
+              revealBox.innerHTML = storyLinesMarkup(s.revealLines, 0.05, 0.35);
+              if (actionBtn) actionBtn.hidden = false;
+            },
+            { once: true }
+          );
+        });
+      }
+
+      bindNext();
+    }
+
+    render();
   }
 
   /* ---------------------------------------------------------------------
@@ -1006,7 +1328,15 @@
         renderDashboard();
       } else if (action === "restore-time") {
         window.__DEV_UNLOCK_ALL__ = false;
+        window.__DEV_FAKE_NOW__ = null;
         renderDashboard();
+      } else if (action === "simulate-time") {
+        const select = $("#dev-time-select");
+        const [days, hours, minutes] = select.value.split(",").map(Number);
+        window.__DEV_UNLOCK_ALL__ = false;
+        window.__DEV_FAKE_NOW__ = new Date(unlockTime(days, hours, minutes)).getTime();
+        renderDashboard();
+        updateDevClocks();
       } else if (action === "open-chapter") {
         const select = $("#dev-chapter-select");
         window.__DEV_UNLOCK_ALL__ = true;
@@ -1037,6 +1367,7 @@
         });
         window.__DEV_UNLOCK_ALL__ = false;
         window.__DEV_UNLOCK_CH11__ = false;
+        window.__DEV_FAKE_NOW__ = null;
         window.location.reload();
       } else if (action === "close") {
         panel.hidden = true;
@@ -1048,8 +1379,9 @@
     const browserEl = $("#dev-browser-time");
     const istEl = $("#dev-ist-time");
     if (!browserEl || !istEl) return;
-    const now = new Date();
-    browserEl.textContent = `Browser: ${now.toLocaleString()}`;
+    const simulating = window.__DEV_FAKE_NOW__ != null;
+    const now = new Date(getNow());
+    browserEl.textContent = simulating ? "SIMULATED TIME:" : `Browser: ${now.toLocaleString()}`;
     istEl.textContent = `IST: ${now.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`;
   }
 
