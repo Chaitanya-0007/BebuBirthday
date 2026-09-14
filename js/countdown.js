@@ -115,6 +115,10 @@ function getChapterStatus(chapter) {
     return opened();
   }
 
+  if (UNLOCKS.allChapters) {
+    return opened();
+  }
+
   // Chapter 1 and Chapter 2 are exempt — everything else pauses overnight
   // between the Chapter 2 reveal and the morning interlude.
   if (isNightLockActive() && chapter.id > 2) {
