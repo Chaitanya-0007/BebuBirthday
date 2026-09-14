@@ -39,5 +39,5 @@ const CONFIG = {
 
   // Developer/testing mode — see README "Developer / testing mode".
   // MUST be false before you send the site to her.
-  devMode: true,
+  devMode: false,
 };
